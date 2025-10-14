@@ -116,12 +116,37 @@ let primer_mapi = mapi (+) [0; 0; 0; 2; 2; 2]
  Pri tem ne smete uporabiti vgrajene funkcije `List.combine`.
 [*----------------------------------------------------------------------------*)
 
-let rec zip _ _ = ()
+let rec zip l1 l2 = match l1 with
+  | [] -> (
+    match l2 with
+  | [] -> []
+  | _ -> failwith "Nista enake dolžine"
+  )
+  | x :: xs -> (
+    match l2 with
+    | [] -> failwith "Nista enake dolžine"
+    | y :: ys ->(
+      (x, y) :: (zip xs ys)
+    )
+  )
+
+let rec zip l1 l2 = match (l1, l2) with
+  | ([], []) -> []
+  | ([], _) -> failwith "Napaka"
+  | (_, [] ) -> failwith "Napaka"
+  | (x::xs, y::ys) -> (x, y) :: zip  xs ys
 
 let primer_zip_1 = zip [1; 1; 1; 1] [0; 1; 2; 3]
 (* val primer_zip_1 : (int * int) list = [(1, 0); (1, 1); (1, 2); (1, 3)] *)
 
 (* let primer_zip_2 = zip [1; 1; 1; 1] [1; 2; 3; 4; 5] *)
+
+let rec app l1 l2 =
+  match l1 with
+  | [] -> l2
+  | x :: xs -> (
+    x :: (app xs l2)
+  )
 
 (*----------------------------------------------------------------------------*
  ## Funkcija `unzip`
@@ -133,7 +158,11 @@ let primer_zip_1 = zip [1; 1; 1; 1] [0; 1; 2; 3]
   Pri tem ne smete uporabiti vgrajene funkcije `List.split`.
 [*----------------------------------------------------------------------------*)
 
-let rec unzip _ = ()
+let rec unzip l = match l with
+  | [] -> ([], [])
+  | (x, y) :: xs ->
+    let (r1, r2) = unzip xs in
+    (x::r1, y::r2)
 
 let primer_unzip_1 = unzip [(0,"a"); (1,"b"); (2,"c")]
 (* val primer_unzip_1 : int list * string list = ([0; 1; 2], ["a"; "b"; "c"]) *)
