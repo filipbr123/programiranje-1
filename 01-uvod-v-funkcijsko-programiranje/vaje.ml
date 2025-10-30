@@ -92,7 +92,8 @@ let primer_vektorji_6 = normirani [3.0; 4.0]
  izračuna projekcijo prvega vektorja na drugega.
 [*----------------------------------------------------------------------------*)
 
-let projekcija _ _ = ()
+let projekcija v1 v2 =
+  razteg ((skalarni_produkt v1 v2) /.  (norma v2 *. norma v2)) v2
 
 let primer_vektorji_7 = projekcija [3.0; 4.0] [1.0; 0.0]
 (* val primer_vektorji_7 : float list = [3.; 0.] *)
@@ -106,7 +107,8 @@ let primer_vektorji_7 = projekcija [3.0; 4.0] [1.0; 0.0]
  oznake in vsebino ter vrne niz, ki predstavlja ustrezno HTML oznako.
 [*----------------------------------------------------------------------------*)
 
-let ovij _ _ = ()
+let ovij oznaka vsebina =
+  "<" ^ oznaka ^ ">" ^ vsebina ^ "</" ^ oznaka ^ ">"
 
 let primer_html_1 = ovij "h1" "Hello, world!"
 (* val primer_html_1 : string = "<h1>Hello, world!</h1>" *)
@@ -117,7 +119,11 @@ let primer_html_1 = ovij "h1" "Hello, world!"
  ustrezno število presledkov.
 [*----------------------------------------------------------------------------*)
 
-let zamakni _ _ = ()
+let zamakni n besedilo =
+  let zamik = String.make n ' ' in
+  let vrstice = String.split_on_char '\n' besedilo in
+  let zamaknjene = List.map (fun vrstica -> zamik ^ vrstica) vrstice in
+  String.concat "\n" zamaknjene 
 
 let primer_html_2 = zamakni 4 "Hello,\nworld!"
 (* val primer_html_2 : string = "    Hello,\n    world!" *)
@@ -127,7 +133,10 @@ let primer_html_2 = zamakni 4 "Hello,\nworld!"
  niz, ki predstavlja ustrezno zamaknjen neurejeni seznam v HTML-ju:
 [*----------------------------------------------------------------------------*)
 
-let ul _ = ()
+let ul seznam =
+  let ovit_sez = (List.map (fun niz -> ovij "li" niz) seznam) in
+  let dolg_niz = String.concat "\n" ovit_sez in
+  "<ul>\n" ^ zamakni 2 dolg_niz ^ "\n</ul>"
 
 let primer_html_3 = ul ["ananas"; "banana"; "čokolada"]
 (* val primer_html_3 : string =
@@ -142,7 +151,11 @@ let primer_html_3 = ul ["ananas"; "banana"; "čokolada"]
  niz, ki vsebuje vejico, loči na del pred in del za njo.
 [*----------------------------------------------------------------------------*)
 
-let razdeli_vrstico _ = ()
+let razdeli_vrstico niz =
+  let i = String.index niz ',' in
+  let pred = String.sub niz 0 i in
+  let za = String.sub niz (i + 2) (String.length niz - i - 2) in
+  (pred, za)
 
 let primer_seznam_1 = razdeli_vrstico "mleko, 2"
 (* val primer_seznam_1 : string * string = ("mleko", "2") *)
@@ -153,7 +166,9 @@ let primer_seznam_1 = razdeli_vrstico "mleko, 2"
  vrednost"`, in vrne seznam ustreznih parov.
 [*----------------------------------------------------------------------------*)
 
-let pretvori_v_seznam_parov _ = ()
+let pretvori_v_seznam_parov niz =
+  let sez = String.split_on_char '\n' niz in
+  List.map (fun vrstica -> razdeli_vrstico vrstica) sez
 
 let primer_seznam_2 = pretvori_v_seznam_parov "mleko, 2\nkruh, 1\njabolko, 5"
 (* val primer_seznam_2 : (string * string) list =
@@ -165,7 +180,8 @@ let primer_seznam_2 = pretvori_v_seznam_parov "mleko, 2\nkruh, 1\njabolko, 5"
  elementov seznama.
 [*----------------------------------------------------------------------------*)
 
-let pretvori_druge_komponente _ _ = ()
+let pretvori_druge_komponente funkcija seznam =
+  List.map (fun nabor -> (fst nabor, funkcija (snd nabor))) seznam
 
 let primer_seznam_3 =
   let seznam = [("ata", "mama"); ("teta", "stric")] in
@@ -178,7 +194,18 @@ let primer_seznam_3 =
  znesek nakupa.
 [*----------------------------------------------------------------------------*)
 
-let izracunaj_skupni_znesek _ _ = ()
+let izracunaj_skupni_znesek niz1 niz2 =
+  let nakupovalni_sez = pretvori_druge_komponente int_of_string (pretvori_v_seznam_parov niz2) in
+  let cenik = pretvori_druge_komponente float_of_string (pretvori_v_seznam_parov niz1) in
+  let najdi_ceno izdelek =
+    match List.assoc_opt izdelek cenik with
+    | Some cena -> cena
+    | None -> 0.0
+  in
+  List.fold_left (fun vsota (izdelek, kolicina) ->
+    vsota +. float_of_int kolicina *. najdi_ceno izdelek
+  ) 0.0 nakupovalni_sez
+
 
 let primer_seznam_4 = 
   let nakupovalni_seznam = "mleko, 2\njabolka, 5"
