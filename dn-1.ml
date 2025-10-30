@@ -464,7 +464,7 @@ let primer_resitve : resitev = [|
  funkcija naj te možnosti ne uporablja, temveč naj sestavi in vrne novo tabelo.
 [*----------------------------------------------------------------------------*)
 
-let dodaj i j n m =
+let dodaj i j n (m : mreza) : mreza =
   Array.mapi (fun k vrstica ->
     if k = i then
       Array.mapi (fun l x -> if l = j then Some n else x) vrstica
@@ -494,7 +494,7 @@ let primer_sudoku_1 = primer_mreze |> dodaj 0 8 2
  izpis v zgornji obliki.
 [*----------------------------------------------------------------------------*)
 
-let izpis_mreze mreza = 
+let izpis_mreze (mreza: mreza) = 
   let niz_vrstica vrstica =
     Array.mapi (fun i celica ->
       let v = match celica with Some x -> string_of_int x | None -> "." in
@@ -532,7 +532,7 @@ let primer_sudoku_2 = primer_mreze |> izpis_mreze |> print_endline
   val primer_sudoku_2 : unit = ()
 *)
 
-let izpis_resitve resitev =
+let izpis_resitve (resitev: resitev) =
   let niz_vrstica vrstica =
     Array.mapi (fun i x ->
       let v = string_of_int x in
@@ -579,7 +579,7 @@ let primer_sudoku_3 = primer_resitve |> izpis_resitve |> print_endline
  mreži podana številka, v rešitvi nahaja enaka številka.
 [*----------------------------------------------------------------------------*)
 
-let ustreza mreza resitev = 
+let ustreza (mreza: mreza) (resitev: resitev) = 
   let n = Array.length mreza in
   let rec preveri i j =
     if i = n then true
@@ -622,7 +622,7 @@ let primer_sudoku_4 = ustreza primer_mreze primer_resitve
  ```
 [*----------------------------------------------------------------------------*)
 
-let ni_v_vrstici (mreza, i) n =
+let ni_v_vrstici ((mreza : mreza), i) n =
   not (Array.exists (fun x -> x = Some n) mreza.(i))
 
 let primer_sudoku_5 = ni_v_vrstici (primer_mreze, 0) 1
@@ -631,10 +631,10 @@ let primer_sudoku_5 = ni_v_vrstici (primer_mreze, 0) 1
 let primer_sudoku_6 = ni_v_vrstici (primer_mreze, 1) 1
 (* val primer_sudoku_6 : bool = false *)
 
-let ni_v_stolpcu (mreza, j) n =
+let ni_v_stolpcu ((mreza : mreza), j) n =
   not (Array.exists (fun vrstica -> vrstica.(j) = Some n) mreza)
 
-let ni_v_skatli (mreza, skatla) n =
+let ni_v_skatli ((mreza : mreza), skatla) n =
   let vrstica_zacetek = (skatla / 3) * 3 in
   let stolpec_zacetek = (skatla mod 3) * 3 in
   let rec preveri i j =
@@ -652,7 +652,7 @@ let ni_v_skatli (mreza, skatla) n =
  funkcija vrne `None`.
 [*----------------------------------------------------------------------------*)
 
-let kandidati mreza i j =
+let kandidati (mreza: mreza) i j =
   match mreza.(i).(j) with
   | Some _ -> None
   | None ->
@@ -686,7 +686,42 @@ let primer_sudoku_8 = kandidati primer_mreze 0 0
  možnosti.*
 [*----------------------------------------------------------------------------*)
 
-let rec resi _ = ()
+let rec resi (m : mreza) : resitev option =
+  let rec resljive_celice i j najmanj_kandidatov min_i min_j =
+    if i >= Array.length m then
+      if najmanj_kandidatov = max_int then None else Some (min_i, min_j)
+    else if j >= Array.length m.(i) then
+      resljive_celice (i + 1) 0 najmanj_kandidatov min_i min_j
+    else
+      match m.(i).(j) with
+      | Some _ -> 
+          resljive_celice i (j + 1) najmanj_kandidatov min_i min_j
+      | None ->
+          match kandidati m i j with
+          | None -> None
+          | Some kandidati_list ->
+              let st_kandidatov = List.length kandidati_list in
+              if st_kandidatov = 0 then None
+              else if st_kandidatov < najmanj_kandidatov then
+                resljive_celice i (j + 1) st_kandidatov i j
+              else
+                resljive_celice i (j + 1) najmanj_kandidatov min_i min_j
+  in
+  match resljive_celice 0 0 max_int (-1) (-1) with
+  | None -> Some (Array.map (Array.map (function Some x -> x | None -> failwith "Nemogoče")) m)
+  | Some (i, j) ->
+      match kandidati m i j with
+      | None -> None
+      | Some kandidati_list ->
+          let rec poskusi_kandidate = function
+            | [] -> None
+            | glava :: rep ->
+                let nova_mreza = dodaj i j glava m in
+                match resi nova_mreza with
+                | Some resitev -> Some resitev
+                | None -> poskusi_kandidate rep
+          in
+          poskusi_kandidate kandidati_list
 
 let primer_sudoku_9 = resi primer_mreze
 (* val primer_sudoku_9 : resitev option =
