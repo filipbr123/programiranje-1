@@ -86,7 +86,7 @@ theorem trd7 {A : Type} {xs : List A} : reverse (reverse xs) = xs :=
     | cons x xs' ih =>
       simp [reverse]
       rw [trd5, ih]
-      simp [concat]
+      simp [reverse, concat]
 
 
 def map {A B : Type} : (A → B) → List A → List B :=
@@ -131,7 +131,7 @@ theorem map_reverse {A B : Type} {f : A → B} {xs : List A} : map f (reverse xs
     | cons x xs' ih =>
       simp [reverse, map]
       rw [map_concat, ih]
-      simp [reverse, map]
+      simp [map]
 
 inductive tree (A : Type) : Type where
   | empty : tree A
@@ -218,7 +218,7 @@ theorem collect_mirror {A : Type} {t : tree A} : collect (mirror t) = reverse (c
     | empty =>
       simp [mirror, collect, reverse]
     | node x l r ihl ihr =>
-      simp [mirror, collect, reverse]
+      simp [mirror, collect]
       rw [ihl, ihr]
       simp [concat]
       rw [trd5]

@@ -30,16 +30,17 @@ def stakni_vektorja : {A : Type} → {m n : Naravno} → Vektor A m → Vektor A
     | Vektor.sestavljen x xs' => Vektor.sestavljen x (stakni_vektorja xs' ys)
 
 
--- Sedaj lahko definiramo `lookup`, ki ne bo nikoli povzročil napake.
 inductive Finite : Naravno -> Type where
   | fzero : {n : Naravno} -> Finite (Naravno.naslednik n)
   | fsucc : {n : Naravno} -> Finite n -> Finite (Naravno.naslednik n)
 
-
-def downcast: a < b -> Finite a -> Finite b
+-- Sedaj lahko definiramo `lookup`, ki ne bo nikoli povzročil napake.
 
 def lookup {A : Type} {n : Naravno} : Vektor A n -> Finite n -> A :=
-  sorry
+  fun xs i =>
+    match xs, i with
+    | Vektor.sestavljen x _, Finite.fzero => x
+    | Vektor.sestavljen _ xs', Finite.fsucc i' => lookup xs' i'
 
 
 -- Včasih enakost tipov ni takoj očitna in jo moramo izpeljati
